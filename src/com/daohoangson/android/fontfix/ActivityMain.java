@@ -12,6 +12,7 @@ import java.util.Set;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.SparseArray;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
@@ -43,33 +44,56 @@ public class ActivityMain extends Activity implements OnClickListener {
 
 	private void doFix() {
 		Map<String, Integer> fontResIds = Fonts.resIds();
-		Set<String> fontNames = fontResIds.keySet();
 
-		Map<String, String> fontPaths = doFix_getPaths(fontNames);
-		Log.d(TAG, String.format("fontPaths.size=%d", fontPaths.size()));
+		Map<String, String> fontPaths = doFix_getPaths(fontResIds);
+		if (fontPaths.size() == 0) {
+			Log.i(TAG, "backupResult=0");
+			return;
+		} else {
+			Log.d(TAG, String.format("fontPaths.size=%d", fontPaths.size()));
+		}
 
 		boolean backupResult = doFix_backup(fontPaths.values());
-		Log.d(TAG, String.format("backupResult=%s", backupResult));
+		if (backupResult == false) {
+			Log.e(TAG, "backupResult=false");
+			return;
+		} else {
+			Log.d(TAG, String.format("backupResult=%s", backupResult));
+		}
 
 		boolean rwResult = doFix_remountSystem(true);
-		Log.d(TAG, String.format("rwResult=%s", rwResult));
-		
+		if (rwResult == false) {
+			Log.e(TAG, "rwResult=false");
+			return;
+		} else {
+			Log.d(TAG, String.format("rwResult=%s", rwResult));
+		}
+
 		boolean copyResult = doFix_copy(fontPaths, fontResIds);
 		Log.d(TAG, String.format("copyResult=%s", copyResult));
-		
+
 		boolean roResult = doFix_remountSystem(false);
 		Log.d(TAG, String.format("roResult=%s", roResult));
 	}
 
-	private Map<String, String> doFix_getPaths(Set<String> fontNames) {
+	private Map<String, String> doFix_getPaths(Map<String, Integer> fontResIds) {
 		Map<String, String> fontPaths = new HashMap<String, String>();
+		SparseArray<String> hashes = Fonts.hashes();
 
-		for (String fontName : fontNames) {
+		for (String fontName : fontResIds.keySet()) {
 			String fontPath = Fonts.getPath(fontName);
 
 			if (fontPath != null) {
-				Log.v(TAG, String.format("font %s -> %s", fontName, fontPath));
-				fontPaths.put(fontName, fontPath);
+				String fontHash = UtilFile.calcHash(fontPath);
+				String resHash = hashes.get(fontResIds.get(fontName));
+
+				if (!fontHash.equals(resHash)) {
+					Log.v(TAG, String.format("font %s: %s", fontName, fontPath));
+					fontPaths.put(fontName, fontPath);
+				} else {
+					Log.v(TAG, String.format("font %s: up to date (hash=%s)",
+							fontName, fontHash));
+				}
 			} else {
 				Log.v(TAG, String.format("font %s -> not found", fontName));
 			}
