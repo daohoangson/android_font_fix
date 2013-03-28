@@ -108,6 +108,7 @@ public class UtilFile {
 			is = new DigestInputStream(is, md);
 
 			byte[] buf = new byte[65536];
+			@SuppressWarnings("unused")
 			int len;
 			while ((len = is.read(buf)) > 0) {
 				// do nothing

@@ -9,37 +9,49 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.SparseArray;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.Button;
 
+import com.actionbarsherlock.app.SherlockListActivity;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
+import com.actionbarsherlock.view.MenuItem;
 import com.daohoangson.android.fontfix.util.UtilCommandLine;
 import com.daohoangson.android.fontfix.util.UtilFile;
 
-public class ActivityMain extends Activity implements OnClickListener {
-
-	private Button btnFix;
+public class ActivityMain extends SherlockListActivity {
 
 	static private String TAG = "ActivityMain";
 
 	@Override
-	public void onClick(View view) {
-		if (view == btnFix) {
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getSupportMenuInflater();
+		inflater.inflate(R.menu.activity_main, menu);
+		return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.mni_fix:
 			doFix();
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
 		}
 	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.activity_main);
-
-		btnFix = (Button) findViewById(R.id.btn_fix);
-		btnFix.setOnClickListener(this);
+	}
+	
+	@Override
+	protected void onResume() {
+		super.onResume();
+		
+		
 	}
 
 	private void doFix() {
